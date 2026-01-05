@@ -1,0 +1,178 @@
+You are an expert full-stack developer setting up ScholarshipHub, a Next.js + Supabase marketplace platform.
+
+=== PROJECT INFO ===
+Name: scholarshiphub
+Framework: Next.js 14 (TypeScript, Tailwind CSS, App Router)
+Database: Supabase PostgreSQL with Prisma ORM
+Language: TypeScript everywhere
+
+=== EXECUTE THESE STEPS IN ORDER ===
+
+STEP 1: Initialize Next.js
+Run: npm create next-app@latest . --typescript --tailwind --eslint --src-dir --app
+(Say YES to all prompts)
+
+STEP 2: Install Dependencies
+Run: npm install @supabase/supabase-js prisma @prisma/client zod axios bcryptjs jsonwebtoken cors dotenv
+
+STEP 3: Create .env.local file with these placeholders:
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+DATABASE_URL=
+JWT_SECRET=
+NODE_ENV=development
+
+Then ASK ME: "Please provide your Supabase credentials (SUPABASE_URL, SUPABASE_ANON_KEY, DATABASE_URL, JWT_SECRET)"
+
+STEP 4: After I provide credentials, update .env.local with actual values
+
+STEP 5: Initialize Prisma
+Run: npx prisma init
+
+STEP 6: Create this Prisma schema in prisma/schema.prisma:
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      String   @default("athlete")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  athleteProfile   AthleteProfile?
+  postgradProfile  PostGradProfile?
+  applications     Application[]
+  bookmarks        Bookmark[]
+}
+
+model AthleteProfile {
+  id      String  @id @default(cuid())
+  userId  String  @unique
+  sport   String
+  level   String
+  gpa     Float?
+  country String?
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PostGradProfile {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  fieldOfStudy String
+  degreeLevel  String
+  gpa          Float?
+  country      String?
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Scholarship {
+  id          String   @id @default(cuid())
+  title       String
+  amount      Float
+  country     String
+  deadline    DateTime
+  sport       String
+  description String?
+  applications Application[]
+  bookmarks    Bookmark[]
+}
+
+model Program {
+  id          String   @id @default(cuid())
+  name        String
+  field       String
+  country     String
+  deadline    DateTime
+  description String?
+  applications Application[]
+  bookmarks    Bookmark[]
+}
+
+model Application {
+  id        String   @id @default(cuid())
+  userId    String
+  itemId    String
+  itemType  String
+  status    String   @default("submitted")
+  appliedAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Bookmark {
+  id       String @id @default(cuid())
+  userId   String
+  itemId   String
+  itemType String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+STEP 7: Push to database
+Run: npx prisma migrate dev --name init
+Run: npx prisma generate
+
+STEP 8: Create folder structure
+Run: mkdir -p src/{components,lib,types,utils,hooks,services}
+
+STEP 9: Create src/lib/supabase.ts:
+import { createClient } from '@supabase/supabase-js'
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+
+STEP 10: Create src/lib/db.ts:
+import { PrismaClient } from '@prisma/client'
+declare global { var prisma: PrismaClient | undefined }
+export const db = global.prisma || new PrismaClient()
+if (process.env.NODE_ENV !== 'production') global.prisma = db
+
+STEP 11: Create src/utils/auth.ts:
+import bcrypt from 'bcryptjs'
+import jwt from 'jsonwebtoken'
+const JWT_SECRET = process.env.JWT_SECRET!
+export async function hashPassword(password: string) { return bcrypt.hash(password, 12) }
+export async function comparePassword(password: string, hash: string) { return bcrypt.compare(password, hash) }
+export function signToken(payload: any) { return jwt.sign(payload, JWT_SECRET, { expiresIn: '1h' }) }
+export function verifyToken(token: string) { return jwt.verify(token, JWT_SECRET) }
+
+STEP 12: Update app/page.tsx:
+export default function Home() {
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-24">
+      <h1 className="text-4xl font-bold">ScholarshipHub</h1>
+      <p className="text-lg text-gray-600">Athlete & Graduate Opportunity Marketplace</p>
+      <p className="mt-4 text-green-600">✅ Setup Complete!</p>
+    </main>
+  )
+}
+
+STEP 13: Create app/api/health/route.ts:
+import { NextResponse } from 'next/server'
+export async function GET() {
+  return NextResponse.json({ status: 'healthy', timestamp: new Date() })
+}
+
+STEP 14: Test
+Run: npm run dev
+Verify localhost:3000 works
+
+STEP 15: Git operations
+Run: git add .
+Run: git commit -m "Initial: Next.js + Supabase + Prisma scaffolding"
+Run: git push origin main
+
+=== IMPORTANT ===
+- Execute steps IN ORDER
+- Stop if any step fails and tell me the error
+- ASK ME for credentials at Step 3
+- Never log or expose secrets
+- Test npm run dev before git operations
+
+Start now with Step 1.
