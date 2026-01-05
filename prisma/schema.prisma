@@ -48,8 +48,6 @@ model Scholarship {
   deadline    DateTime
   sport       String
   description String?
-  applications Application[]
-  bookmarks    Bookmark[]
 }
 
 model Program {
@@ -59,8 +57,6 @@ model Program {
   country     String
   deadline    DateTime
   description String?
-  applications Application[]
-  bookmarks    Bookmark[]
 }
 
 model Application {
