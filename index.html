@@ -100,6 +100,12 @@
     </div>
 
     <script>
+        // Audio configuration constants
+        const SOUND_DURATION_MS = 800;
+        const DRUM_VOLUME = 0.5;
+        const CYMBAL_VOLUME = 0.3;
+        const FADE_OUT_VOLUME = 0.01;
+
         const button = document.getElementById('badumButton');
         let audioContext;
         let isPlaying = false;
@@ -130,7 +136,7 @@
 
             setTimeout(() => {
                 isPlaying = false;
-            }, 800);
+            }, SOUND_DURATION_MS);
         }
 
         // Simulate drum hit sound
@@ -144,8 +150,8 @@
             oscillator.frequency.setValueAtTime(frequency, startTime);
             oscillator.frequency.exponentialRampToValueAtTime(50, startTime + 0.1);
 
-            gainNode.gain.setValueAtTime(0.5, startTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+            gainNode.gain.setValueAtTime(DRUM_VOLUME, startTime);
+            gainNode.gain.exponentialRampToValueAtTime(FADE_OUT_VOLUME, startTime + duration);
 
             oscillator.start(startTime);
             oscillator.stop(startTime + duration);
@@ -170,8 +176,8 @@
             filter.frequency.value = 8000;
 
             const gainNode = audioContext.createGain();
-            gainNode.gain.setValueAtTime(0.3, startTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+            gainNode.gain.setValueAtTime(CYMBAL_VOLUME, startTime);
+            gainNode.gain.exponentialRampToValueAtTime(FADE_OUT_VOLUME, startTime + duration);
 
             noise.connect(filter);
             filter.connect(gainNode);
