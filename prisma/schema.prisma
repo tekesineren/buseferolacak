@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  role      String   @default("athlete")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  athleteProfile   AthleteProfile?
+  postgradProfile  PostGradProfile?
+  applications     Application[]
+  bookmarks        Bookmark[]
+}
+
+model AthleteProfile {
+  id      String  @id @default(cuid())
+  userId  String  @unique
+  sport   String
+  level   String
+  gpa     Float?
+  country String?
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PostGradProfile {
+  id           String  @id @default(cuid())
+  userId       String  @unique
+  fieldOfStudy String
+  degreeLevel  String
+  gpa          Float?
+  country      String?
+  user         User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Scholarship {
+  id          String   @id @default(cuid())
+  title       String
+  amount      Float
+  country     String
+  deadline    DateTime
+  sport       String
+  description String?
+  applications Application[]
+  bookmarks    Bookmark[]
+}
+
+model Program {
+  id          String   @id @default(cuid())
+  name        String
+  field       String
+  country     String
+  deadline    DateTime
+  description String?
+  applications Application[]
+  bookmarks    Bookmark[]
+}
+
+model Application {
+  id        String   @id @default(cuid())
+  userId    String
+  itemId    String
+  itemType  String
+  status    String   @default("submitted")
+  appliedAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Bookmark {
+  id       String @id @default(cuid())
+  userId   String
+  itemId   String
+  itemType String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
