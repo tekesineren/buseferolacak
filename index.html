@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Badum Tıss!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .container {
+            text-align: center;
+            padding: 2rem;
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+
+        #badumButton {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border: none;
+            border-radius: 50%;
+            width: 200px;
+            height: 200px;
+            font-size: 2rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+        }
+
+        #badumButton:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        #badumButton:active {
+            transform: scale(0.95);
+        }
+
+        #badumButton.playing {
+            animation: drumhit 0.3s ease;
+        }
+
+        @keyframes drumhit {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(0.9);
+            }
+        }
+
+        .footer {
+            position: fixed;
+            bottom: 20px;
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .emoji {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="emoji">🥁</div>
+        <h1>Badum Tıss!</h1>
+        <p class="subtitle">Espri zamanı geldiğinde tıkla!</p>
+        <button id="badumButton">TIKLA!</button>
+    </div>
+    <div class="footer">
+        Made with ❤️ for great jokes
+    </div>
+
+    <script>
+        // Audio configuration constants
+        const SOUND_DURATION_MS = 800;
+        const ANIMATION_DURATION_MS = 300;
+        const DRUM_VOLUME = 0.5;
+        const CYMBAL_VOLUME = 0.3;
+        const FADE_OUT_VOLUME = 0.01;
+        
+        // Drum sound parameters
+        const DRUM1_FREQ = 200;
+        const DRUM2_FREQ = 250;
+        const DRUM_FREQ_END = 50;
+        const DRUM_DURATION = 0.3;
+        const DRUM_FREQ_RAMP_TIME = 0.1;
+        const DRUM2_DELAY = 0.15;
+        
+        // Cymbal sound parameters
+        const CYMBAL_DELAY = 0.3;
+        const CYMBAL_DURATION = 0.5;
+        const CYMBAL_FILTER_FREQ = 8000;
+
+        const button = document.getElementById('badumButton');
+        let audioContext;
+        let isPlaying = false;
+
+        // Initialize AudioContext on first user interaction
+        function initAudio() {
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        // Generate rimshot sound using Web Audio API
+        function playBadumTss() {
+            if (isPlaying) return;
+            isPlaying = true;
+
+            initAudio();
+
+            button.classList.add('playing');
+            setTimeout(() => button.classList.remove('playing'), ANIMATION_DURATION_MS);
+
+            // Ba-dum (two quick drum hits)
+            playDrum(audioContext.currentTime, DRUM1_FREQ, DRUM_DURATION);
+            playDrum(audioContext.currentTime + DRUM2_DELAY, DRUM2_FREQ, DRUM_DURATION);
+            
+            // Tss (cymbal/hi-hat sound)
+            playCymbal(audioContext.currentTime + CYMBAL_DELAY, CYMBAL_DURATION);
+
+            setTimeout(() => {
+                isPlaying = false;
+            }, SOUND_DURATION_MS);
+        }
+
+        // Simulate drum hit sound
+        function playDrum(startTime, frequency, duration) {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.frequency.setValueAtTime(frequency, startTime);
+            oscillator.frequency.exponentialRampToValueAtTime(DRUM_FREQ_END, startTime + DRUM_FREQ_RAMP_TIME);
+
+            gainNode.gain.setValueAtTime(DRUM_VOLUME, startTime);
+            gainNode.gain.exponentialRampToValueAtTime(FADE_OUT_VOLUME, startTime + duration);
+
+            oscillator.start(startTime);
+            oscillator.stop(startTime + duration);
+        }
+
+        // Simulate cymbal/hi-hat sound
+        function playCymbal(startTime, duration) {
+            const bufferSize = audioContext.sampleRate * duration;
+            const buffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const data = buffer.getChannelData(0);
+
+            // Generate white noise
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+
+            const noise = audioContext.createBufferSource();
+            noise.buffer = buffer;
+
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'highpass';
+            filter.frequency.value = CYMBAL_FILTER_FREQ;
+
+            const gainNode = audioContext.createGain();
+            gainNode.gain.setValueAtTime(CYMBAL_VOLUME, startTime);
+            gainNode.gain.exponentialRampToValueAtTime(FADE_OUT_VOLUME, startTime + duration);
+
+            noise.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            noise.start(startTime);
+            noise.stop(startTime + duration);
+        }
+
+        // Event listener
+        button.addEventListener('click', playBadumTss);
+
+        // Also allow spacebar to trigger
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                playBadumTss();
+            }
+        });
+    </script>
+</body>
+</html>
