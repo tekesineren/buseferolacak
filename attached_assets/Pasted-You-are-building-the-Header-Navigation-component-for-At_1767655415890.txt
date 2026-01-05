@@ -1,0 +1,77 @@
+You are building the Header & Navigation component for "Athlete & Graduate Opportunity Marketplace" platform. This is a desktop layout implementation.
+
+## Core Requirements
+
+### Header Structure
+Create a fixed header with the following sections:
+
+**Left Section:**
+- Platform logo (clickable, links to homepage)
+- Platform name/wordmark
+
+**Center Section:**
+- Global search bar (min-width: 400px)
+- Placeholder text: "Search opportunities, companies, or mentors..."
+- Search icon on left side
+- Keyboard shortcut hint (⌘K / Ctrl+K)
+
+**Right Section (left to right):**
+- "Post Opportunity" button (primary CTA)
+- Messages icon with notification badge
+- Notifications bell icon with badge
+- Profile avatar with dropdown trigger
+
+### Main Navigation (below header or integrated)
+Navigation items for Athlete view:
+- Dashboard
+- Explore Opportunities (with mega menu)
+- My Applications (with count badge)
+- Mentorship
+- Network
+- Saved
+
+### Scroll Behavior Implementation
+
+**Transparent to Solid Transition:**
+Implement scroll-based header transformation using the following technical approach:
+
+1. **Initial State (Top of Page):**
+   - `position: fixed`
+   - `background-color: transparent`
+   - `padding: 25px 50px`
+   - No box-shadow
+
+2. **Scrolled State (After threshold):**
+   - `background-color: rgba(255, 255, 255, 0.95)`
+   - `backdrop-filter: blur(10px)`
+   - `padding: 15px 50px`
+   - `box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1)`
+
+3. **JavaScript Implementation:**
+   - Use `requestAnimationFrame` for performance optimization
+   - Add `{ passive: true }` to scroll event listener
+   - Set scroll threshold at 50px
+   - Toggle `.scrolled` class based on `window.scrollY`
+
+```javascript
+const header = document.querySelector('.main-header');
+let ticking = false;
+
+function updateHeader() {
+  const scrollPosition = window.scrollY;
+  const threshold = 50;
+  
+  if (scrollPosition > threshold) {
+    header.classList.add('scrolled');
+  } else {
+    header.classList.remove('scrolled');
+  }
+  ticking = false;
+}
+
+window.addEventListener('scroll', function() {
+  if (!ticking) {
+    window.requestAnimationFrame(updateHeader);
+    ticking = true;
+  }
+}, { passive: true });
