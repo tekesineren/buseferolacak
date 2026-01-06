@@ -1,8 +1,34 @@
+import React, { useState, useMemo, Suspense, Component } from 'react'
 import { motion } from 'framer-motion'
 import { Canvas } from '@react-three/fiber'
 import { OrbitControls } from '@react-three/drei'
-import { useRef, useMemo } from 'react'
 import * as THREE from 'three'
+
+class GlobeErrorBoundary extends Component {
+  constructor(props) {
+    super(props)
+    this.state = { hasError: false }
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback
+    }
+    return this.props.children
+  }
+}
+
+const GlobeFallback = () => (
+  <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-900/50 to-cyan-900/50 rounded-2xl border border-cyan-500/30">
+    <div className="text-center">
+      <div className="text-6xl mb-4">🌍</div>
+      <p className="text-cyan-300 text-lg font-medium">Global University Network</p>
+      <p className="text-gray-400 text-sm mt-2">25,000+ institutions worldwide</p>
+    </div>
+  </div>
+)
 
 const AnimatedGlobe = () => {
   const points = useMemo(() => {
@@ -143,10 +169,14 @@ export default function Hero() {
             variants={itemVariants}
             className="h-96 lg:h-[500px] rounded-2xl overflow-hidden"
           >
-            <Canvas>
-              <AnimatedGlobe />
-              <OrbitControls autoRotate autoRotateSpeed={4} enableZoom={false} />
-            </Canvas>
+            <GlobeErrorBoundary fallback={<GlobeFallback />}>
+              <Canvas>
+                <Suspense fallback={null}>
+                  <AnimatedGlobe />
+                  <OrbitControls autoRotate autoRotateSpeed={4} enableZoom={false} />
+                </Suspense>
+              </Canvas>
+            </GlobeErrorBoundary>
           </motion.div>
         </div>
       </div>
