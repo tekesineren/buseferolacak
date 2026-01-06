@@ -1,0 +1,114 @@
+import { motion } from 'framer-motion'
+import { useInView } from 'react-intersection-observer'
+
+export default function Testimonials() {
+  const { ref, inView } = useInView({ threshold: 0.2, triggerOnce: true })
+
+  const testimonials = [
+    {
+      name: 'Sarah Chen',
+      university: 'Stanford University',
+      rating: 5,
+      text: 'Ventora helped me get accepted to my dream university. The AI recommendations were spot-on and saved me months of research!',
+      initials: 'SC',
+      bg: 'from-blue-500 to-cyan-500',
+    },
+    {
+      name: 'Ahmed Hassan',
+      university: 'MIT',
+      rating: 5,
+      text: 'The visa risk assessment was incredibly accurate. It helped me understand potential issues before applying.',
+      initials: 'AH',
+      bg: 'from-purple-500 to-pink-500',
+    },
+    {
+      name: 'Emma Rodriguez',
+      university: 'Harvard University',
+      rating: 5,
+      text: 'The portfolio insights completely transformed how I presented my achievements. Highly recommend!',
+      initials: 'ER',
+      bg: 'from-orange-500 to-red-500',
+    },
+    {
+      name: 'Raj Patel',
+      university: 'UC Berkeley',
+      rating: 5,
+      text: 'Finding the right university felt overwhelming until I used Ventora. The AI matching is genuinely life-changing.',
+      initials: 'RP',
+      bg: 'from-green-500 to-emerald-500',
+    },
+    {
+      name: 'Lisa Wang',
+      university: 'Oxford University',
+      rating: 5,
+      text: 'The scholarship opportunities Ventora found for me were amazing. I got funded fully!',
+      initials: 'LW',
+      bg: 'from-indigo-500 to-purple-500',
+    },
+    {
+      name: 'Marcus Johnson',
+      university: 'Stanford University',
+      rating: 5,
+      text: 'As an athlete, the sports scholarship matching feature was exactly what I needed.',
+      initials: 'MJ',
+      bg: 'from-cyan-500 to-blue-500',
+    },
+  ]
+
+  return (
+    <section ref={ref} className="py-20 bg-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: -20 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
+          transition={{ duration: 0.8 }}
+        >
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Loved by Students Worldwide
+          </h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Real stories from students who found their perfect university match.
+          </p>
+        </motion.div>
+
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+          initial={{ opacity: 0 }}
+          animate={inView ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          {testimonials.map((testimonial, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className="bg-gradient-to-br from-gray-50 to-gray-100 p-8 rounded-2xl border border-gray-200 hover:shadow-xl transition-all duration-300"
+            >
+              <div className="flex gap-1 mb-4">
+                {[...Array(testimonial.rating)].map((_, i) => (
+                  <span key={i} className="text-yellow-400 text-lg">★</span>
+                ))}
+              </div>
+
+              <p className="text-gray-700 mb-6 italic leading-relaxed">
+                "{testimonial.text}"
+              </p>
+
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${testimonial.bg} flex items-center justify-center text-white font-bold`}>
+                  {testimonial.initials}
+                </div>
+                <div>
+                  <p className="font-bold text-gray-900">{testimonial.name}</p>
+                  <p className="text-sm text-gray-600">{testimonial.university}</p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  )
+}

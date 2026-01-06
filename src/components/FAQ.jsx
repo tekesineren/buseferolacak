@@ -1,0 +1,154 @@
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import { useInView } from 'react-intersection-observer'
+
+export default function FAQ() {
+  const { ref, inView } = useInView({ threshold: 0.2, triggerOnce: true })
+  const [openIndex, setOpenIndex] = useState(null)
+  const [searchTerm, setSearchTerm] = useState('')
+
+  const faqs = [
+    {
+      question: 'How does AI university matching work?',
+      answer: 'Our AI analyzes your academic profile, test scores, interests, and goals to match you with universities where you have the best chance of admission and fit. We consider over 100 factors.',
+      category: 'Getting Started',
+    },
+    {
+      question: 'Is Ventora free to use?',
+      answer: 'Yes! Our Starter plan is completely free forever. You get basic university matching and CV analysis. Upgrade to Pro for unlimited matching and advanced features.',
+      category: 'Billing',
+    },
+    {
+      question: 'What is the Visa Risk Assessment?',
+      answer: 'This AI tool predicts your visa approval probability based on historical data and your profile. It flags potential issues early so you can address them.',
+      category: 'Features',
+    },
+    {
+      question: 'How accurate is the university matching?',
+      answer: 'Our matching algorithm has a 94% accuracy rate based on actual student outcomes. We continuously improve it with new data.',
+      category: 'Features',
+    },
+    {
+      question: 'Can I export my data?',
+      answer: 'Yes! You can export your university matches, assessments, and recommendations as PDF or CSV anytime. All your data belongs to you.',
+      category: 'Privacy',
+    },
+    {
+      question: 'How long does CV analysis take?',
+      answer: 'Our AI analyzes your CV instantly. You get a detailed breakdown of your strengths, achievements, and recommendations within seconds.',
+      category: 'Getting Started',
+    },
+    {
+      question: 'What universities are included?',
+      answer: 'We have data on 25,000+ universities across 189 countries, including all top-ranked institutions and hidden gems.',
+      category: 'Features',
+    },
+    {
+      question: 'Is my data secure?',
+      answer: 'Yes. We use enterprise-grade encryption, comply with GDPR, and never share your data with third parties without consent.',
+      category: 'Privacy',
+    },
+  ]
+
+  const filteredFaqs = faqs.filter(
+    (faq) =>
+      faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  return (
+    <section ref={ref} id="faq" className="py-20 bg-white">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <motion.div
+          className="text-center mb-12"
+          initial={{ opacity: 0, y: -20 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
+          transition={{ duration: 0.8 }}
+        >
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-xl text-gray-600 mb-8">
+            Find answers to common questions about Ventora
+          </p>
+
+          <div className="relative max-w-xl mx-auto">
+            <input
+              type="text"
+              placeholder="Search FAQs..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full px-6 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+            />
+            <svg className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
+        </motion.div>
+
+        <motion.div
+          className="space-y-4"
+          initial={{ opacity: 0 }}
+          animate={inView ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          {filteredFaqs.map((faq, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 10 }}
+              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+              transition={{ duration: 0.6, delay: index * 0.05 }}
+              className="border border-gray-200 rounded-lg overflow-hidden hover:border-blue-300 transition-colors"
+            >
+              <button
+                onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                className="w-full px-6 py-4 flex items-center justify-between bg-gray-50 hover:bg-blue-50 transition-colors text-left"
+              >
+                <span className="font-bold text-gray-900">{faq.question}</span>
+                <motion.svg
+                  className="w-5 h-5 text-blue-600 flex-shrink-0"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  animate={{ rotate: openIndex === index ? 180 : 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </motion.svg>
+              </button>
+
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={
+                  openIndex === index
+                    ? { height: 'auto', opacity: 1 }
+                    : { height: 0, opacity: 0 }
+                }
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden"
+              >
+                <div className="px-6 py-4 bg-white border-t border-gray-200">
+                  <p className="text-gray-700 leading-relaxed">{faq.answer}</p>
+                  <span className="inline-block mt-4 text-xs font-medium text-blue-600 bg-blue-50 px-3 py-1 rounded-full">
+                    {faq.category}
+                  </span>
+                </div>
+              </motion.div>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {filteredFaqs.length === 0 && (
+          <motion.div
+            className="text-center py-12"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <p className="text-gray-600">No FAQs match your search. Try different keywords.</p>
+          </motion.div>
+        )}
+      </div>
+    </section>
+  )
+}

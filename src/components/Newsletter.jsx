@@ -1,0 +1,84 @@
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+
+export default function Newsletter() {
+  const [email, setEmail] = useState('')
+  const [status, setStatus] = useState(null)
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setLoading(true)
+
+    setTimeout(() => {
+      if (email && email.includes('@')) {
+        setStatus('success')
+        setEmail('')
+        setTimeout(() => setStatus(null), 4000)
+      } else {
+        setStatus('error')
+      }
+      setLoading(false)
+    }, 500)
+  }
+
+  return (
+    <section className="py-20 bg-gradient-to-r from-blue-600 to-cyan-600">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center text-white">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+            Stay Updated
+          </h2>
+          <p className="text-xl text-blue-50 mb-8 max-w-2xl mx-auto">
+            Get weekly tips on university selection, scholarship opportunities, and success stories from accepted students.
+          </p>
+
+          <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="flex-1 px-6 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              disabled={loading}
+            />
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-8 py-3 bg-white text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Subscribing...' : 'Subscribe'}
+            </button>
+          </form>
+
+          {status === 'success' && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="mt-6 inline-block bg-green-400/20 border border-green-300 text-green-50 px-6 py-3 rounded-lg"
+            >
+              Thanks for subscribing! Check your email for confirmation.
+            </motion.div>
+          )}
+
+          {status === 'error' && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0 }}
+              className="mt-6 inline-block bg-red-400/20 border border-red-300 text-red-50 px-6 py-3 rounded-lg"
+            >
+              Please enter a valid email address.
+            </motion.div>
+          )}
+        </motion.div>
+      </div>
+    </section>
+  )
+}

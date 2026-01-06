@@ -1,40 +1,29 @@
 {
-  "name": "scholarshiphub",
-  "version": "0.1.0",
+  "name": "ventora",
   "private": true,
+  "version": "1.0.0",
+  "type": "module",
   "scripts": {
-    "dev": "next dev -p 5000 --hostname 0.0.0.0",
-    "build": "prisma generate && next build",
-    "start": "next start -p 5000",
-    "lint": "next lint",
-    "postinstall": "prisma generate"
+    "dev": "vite --host 0.0.0.0 --port 5000",
+    "build": "vite build",
+    "preview": "vite preview --host 0.0.0.0 --port 5000"
   },
   "dependencies": {
-    "@prisma/client": "^5.22.0",
-    "@supabase/supabase-js": "^2.89.0",
-    "axios": "^1.13.2",
-    "bcryptjs": "^3.0.3",
-    "cors": "^2.8.5",
-    "dotenv": "^17.2.3",
-    "jsonwebtoken": "^9.0.3",
-    "next": "14.2.21",
-    "prisma": "^5.22.0",
-    "react": "^18",
-    "react-dom": "^18",
-    "zod": "^4.3.5"
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "framer-motion": "^10.16.4",
+    "@react-three/fiber": "^8.14.5",
+    "@react-three/drei": "^9.86.7",
+    "three": "^0.157.0",
+    "react-intersection-observer": "^9.5.2"
   },
   "devDependencies": {
-    "@types/bcryptjs": "^2.4.6",
-    "@types/cors": "^2.8.19",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^20",
-    "@types/react": "^18",
-    "@types/react-dom": "^18",
-    "autoprefixer": "^10.0.1",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.21",
-    "postcss": "^8",
-    "tailwindcss": "^3.4.1",
-    "typescript": "^5"
+    "@types/react": "^18.2.27",
+    "@types/react-dom": "^18.2.12",
+    "@vitejs/plugin-react": "^4.1.0",
+    "vite": "^5.0.0",
+    "tailwindcss": "^3.3.5",
+    "autoprefixer": "^10.4.16",
+    "postcss": "^8.4.31"
   }
 }

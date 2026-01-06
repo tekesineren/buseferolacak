@@ -1,0 +1,52 @@
+import { motion } from 'framer-motion'
+
+export default function CTASection() {
+  return (
+    <section className="py-20 bg-white">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-6">
+            Ready to Find Your Perfect Match?
+          </h2>
+          <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
+            Join thousands of students who've successfully found their dream universities with Ventora's AI-powered platform. Start your journey today—completely free!
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <button className="px-8 py-4 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-700 transition-all transform hover:scale-105 shadow-lg hover:shadow-xl">
+              Start Free Now
+            </button>
+            <button className="px-8 py-4 border-2 border-blue-600 text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition-colors">
+              Schedule Demo
+            </button>
+          </div>
+
+          <div className="mt-12 grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              { label: '10,000+', sublabel: 'Happy Students' },
+              { label: '25,000+', sublabel: 'Universities' },
+              { label: '94%', sublabel: 'Match Accuracy' },
+              { label: '189', sublabel: 'Countries' },
+            ].map((badge, index) => (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, scale: 0.9 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+              >
+                <div className="text-2xl md:text-3xl font-bold text-blue-600">{badge.label}</div>
+                <div className="text-gray-600">{badge.sublabel}</div>
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  )
+}

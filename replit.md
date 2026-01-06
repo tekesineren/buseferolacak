@@ -1,51 +1,42 @@
-# ScholarshipHub
+# Ventora
 
 ## Overview
-ScholarshipHub is a Next.js + Supabase marketplace platform for athletes and graduate students to find scholarship and program opportunities.
+Ventora is an AI-powered university matching platform built with React + Vite. It helps students find their perfect university match across 25,000+ universities in 189 countries.
 
-**Framework:** Next.js 14 (TypeScript, Tailwind CSS, App Router)  
-**Database:** Supabase PostgreSQL with Prisma ORM  
-**Language:** TypeScript everywhere
+**Framework:** React 18 with Vite  
+**Styling:** Tailwind CSS  
+**Animations:** Framer Motion  
+**3D Graphics:** React Three Fiber + Three.js
 
 ## Current State
-- Initial project scaffolding complete
-- Next.js 14 with TypeScript, Tailwind CSS, App Router configured
-- Prisma schema created with models: User, AthleteProfile, PostGradProfile, Scholarship, Program, Application, Bookmark
-- Supabase client and Prisma database utilities set up
-- Authentication utilities (bcrypt, JWT) ready
-- **Pending:** Database migration after Supabase credentials are provided
+- Full landing page with all sections complete
+- 3D animated globe in hero section
+- Responsive design with mobile menu
+- Animated components with scroll-triggered animations
 
 ## Project Structure
 ```
 src/
-├── app/           # Next.js App Router pages
-│   ├── api/       # API routes
-│   │   └── health/route.ts
-│   ├── layout.tsx
-│   ├── page.tsx
-│   └── globals.css
-├── components/    # Reusable React components
-├── lib/           # Library utilities (Supabase client, Prisma client)
-├── types/         # TypeScript type definitions
-├── utils/         # Helper functions (auth utilities)
-├── hooks/         # Custom React hooks
-└── services/      # Business logic services
-
-prisma/
-└── schema.prisma  # Database schema
+├── App.jsx              # Main app component
+├── main.jsx             # Entry point
+├── index.css            # Global styles + Tailwind
+└── components/
+    ├── Header.jsx       # Sticky navigation
+    ├── Hero.jsx         # Hero section with 3D globe
+    ├── Features.jsx     # Feature cards
+    ├── UniversityCarousel.jsx  # Auto-scrolling university logos
+    ├── Testimonials.jsx # Student testimonials
+    ├── Pricing.jsx      # Pricing plans
+    ├── FAQ.jsx          # FAQ accordion
+    ├── Newsletter.jsx   # Email subscription
+    ├── CTASection.jsx   # Call to action
+    └── Footer.jsx       # Site footer
 ```
-
-## Environment Variables Required
-- `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anonymous key
-- `DATABASE_URL` - PostgreSQL connection string
-- `JWT_SECRET` - Secret for JWT token signing
-
-## Recent Changes
-- **Jan 05, 2026:** Initial project setup with Next.js 14, Tailwind CSS, Prisma, and Supabase client
 
 ## Development Commands
 - `npm run dev` - Start development server on port 5000
-- `npx prisma migrate dev` - Run database migrations
-- `npx prisma generate` - Generate Prisma client
-- `npx prisma studio` - Open Prisma Studio for database management
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+
+## Recent Changes
+- **Jan 05, 2026:** Imported Ventora landing page from GitHub repo
