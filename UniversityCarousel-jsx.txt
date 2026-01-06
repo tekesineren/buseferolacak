@@ -1,0 +1,71 @@
+// UniversityCarousel.jsx
+import { useEffect, useRef } from 'react'
+
+export default function UniversityCarousel() {
+  const universities = [
+    { name: 'Stanford University', abbr: 'SU' },
+    { name: 'MIT', abbr: 'MIT' },
+    { name: 'Harvard University', abbr: 'HU' },
+    { name: 'UC Berkeley', abbr: 'UCB' },
+    { name: 'Oxford University', abbr: 'OX' },
+    { name: 'Cambridge University', abbr: 'CAM' },
+    { name: 'Yale University', abbr: 'YU' },
+    { name: 'Princeton University', abbr: 'PU' },
+    { name: 'University of Chicago', abbr: 'UChicago' },
+    { name: 'Columbia University', abbr: 'CU' },
+  ]
+
+  const scrollRef = useRef(null)
+
+  useEffect(() => {
+    const scrollContainer = scrollRef.current
+    if (!scrollContainer) return
+
+    let scrollAmount = 0
+    const scrollSpeed = 1
+    const interval = setInterval(() => {
+      scrollAmount += scrollSpeed
+      if (scrollContainer.scrollLeft >= scrollContainer.scrollWidth / 2) {
+        scrollAmount = 0
+        scrollContainer.scrollLeft = 0
+      }
+      scrollContainer.scrollLeft = scrollAmount
+    }, 30)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <section className="py-16 bg-gray-50 border-y border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
+        <p className="text-center text-gray-600 font-medium">
+          Trusted by students from leading universities worldwide
+        </p>
+      </div>
+
+      <div className="overflow-hidden">
+        <div
+          ref={scrollRef}
+          className="flex gap-6 pb-4 px-4"
+          style={{ scrollBehavior: 'smooth' }}
+        >
+          {[...universities, ...universities].map((uni, index) => (
+            <div
+              key={index}
+              className="flex-shrink-0 group"
+            >
+              <div className="flex items-center gap-3 px-6 py-3 bg-white rounded-xl border border-gray-200 hover:border-blue-300 hover:shadow-lg transition-all duration-300 cursor-pointer">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                  {uni.abbr.slice(0, 2)}
+                </div>
+                <span className="text-sm font-medium text-gray-700 group-hover:text-blue-600 transition-colors whitespace-nowrap">
+                  {uni.name}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}

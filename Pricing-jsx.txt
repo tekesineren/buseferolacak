@@ -1,0 +1,169 @@
+// Pricing.jsx
+import { motion } from 'framer-motion'
+import { useState } from 'react'
+import { useInView } from 'react-intersection-observer'
+
+export default function Pricing() {
+  const { ref, inView } = useInView({ threshold: 0.2, triggerOnce: true })
+  const [isAnnual, setIsAnnual] = useState(false)
+
+  const plans = [
+    {
+      name: 'Starter',
+      price: isAnnual ? '$0' : '$0',
+      period: '/forever',
+      description: 'Perfect for exploring',
+      features: ['AI University Matching', '5 Saved Universities', 'Basic CV Analysis', 'Email Support'],
+      highlight: false,
+      cta: 'Get Started',
+    },
+    {
+      name: 'Pro',
+      price: isAnnual ? '$240' : '$29',
+      period: isAnnual ? '/year' : '/month',
+      description: 'Most popular choice',
+      features: [
+        'Everything in Starter',
+        'Unlimited University Matching',
+        'Visa Risk Assessment',
+        'Portfolio Insights',
+        'Priority Support',
+        'Goal Mapping Tool',
+        'Athletic Scholarship Finder',
+      ],
+      highlight: true,
+      cta: 'Start Free Trial',
+    },
+    {
+      name: 'Enterprise',
+      price: 'Custom',
+      period: '',
+      description: 'For schools & counselors',
+      features: [
+        'Everything in Pro',
+        'White-Label Solution',
+        'API Access',
+        'Custom Integrations',
+        'Dedicated Account Manager',
+        'Advanced Analytics',
+        'Bulk User Management',
+      ],
+      highlight: false,
+      cta: 'Contact Sales',
+    },
+  ]
+
+  return (
+    <section ref={ref} id="pricing" className="py-20 bg-gradient-to-b from-gray-50 to-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header */}
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: -20 }}
+          animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: -20 }}
+          transition={{ duration: 0.8 }}
+        >
+          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
+            Simple, Transparent Pricing
+          </h2>
+          <p className="text-xl text-gray-600 mb-8">
+            Choose the perfect plan for your journey
+          </p>
+
+          {/* Billing Toggle */}
+          <div className="flex justify-center items-center gap-4">
+            <span className={`font-medium ${!isAnnual ? 'text-gray-900' : 'text-gray-500'}`}>
+              Monthly
+            </span>
+            <button
+              onClick={() => setIsAnnual(!isAnnual)}
+              className={`relative inline-flex h-8 w-14 items-center rounded-full transition-colors ${
+                isAnnual ? 'bg-blue-600' : 'bg-gray-300'
+              }`}
+            >
+              <span
+                className={`inline-block h-6 w-6 transform rounded-full bg-white transition-transform ${
+                  isAnnual ? 'translate-x-7' : 'translate-x-1'
+                }`}
+              />
+            </button>
+            <span className={`font-medium ${isAnnual ? 'text-gray-900' : 'text-gray-500'}`}>
+              Annual
+              <span className="text-green-600 text-sm ml-2">Save 20%</span>
+            </span>
+          </div>
+        </motion.div>
+
+        {/* Pricing Cards */}
+        <motion.div
+          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          initial={{ opacity: 0 }}
+          animate={inView ? { opacity: 1 } : { opacity: 0 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+        >
+          {plans.map((plan, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              animate={inView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+              transition={{ duration: 0.6, delay: index * 0.1 }}
+              className={`relative rounded-2xl transition-all duration-300 ${
+                plan.highlight
+                  ? 'bg-gradient-to-br from-blue-600 to-cyan-600 text-white shadow-2xl scale-105 md:scale-100 md:ring-2 md:ring-offset-4 md:ring-blue-600'
+                  : 'bg-white border border-gray-200 hover:shadow-xl hover:border-blue-200'
+              }`}
+            >
+              {plan.highlight && (
+                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                  <span className="bg-orange-400 text-white px-4 py-1 rounded-full text-sm font-bold">
+                    Most Popular
+                  </span>
+                </div>
+              )}
+
+              <div className="p-8">
+                <h3 className={`text-2xl font-bold mb-2 ${plan.highlight ? 'text-white' : 'text-gray-900'}`}>
+                  {plan.name}
+                </h3>
+                <p className={`mb-6 ${plan.highlight ? 'text-blue-100' : 'text-gray-600'}`}>
+                  {plan.description}
+                </p>
+
+                <div className="mb-6">
+                  <span className="text-4xl font-bold">{plan.price}</span>
+                  <span className={plan.highlight ? 'text-blue-100' : 'text-gray-600'}>
+                    {plan.period}
+                  </span>
+                </div>
+
+                <button
+                  className={`w-full py-3 rounded-lg font-bold mb-8 transition-all ${
+                    plan.highlight
+                      ? 'bg-white text-blue-600 hover:bg-blue-50'
+                      : 'bg-blue-600 text-white hover:bg-blue-700'
+                  }`}
+                >
+                  {plan.cta}
+                </button>
+
+                {/* Features List */}
+                <ul className="space-y-4">
+                  {plan.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-3">
+                      <span className={`mt-1 ${plan.highlight ? 'text-blue-100' : 'text-green-500'}`}>
+                        ✓
+                      </span>
+                      <span className={plan.highlight ? 'text-blue-50' : 'text-gray-700'}>
+                        {feature}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </section>
+  )
+}
