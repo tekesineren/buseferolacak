@@ -5,7 +5,7 @@ export default function Home() {
     <main className="min-h-screen">
       <div className="relative w-full h-screen">
         <Image
-          src="/images/hero.jpg"
+          src="/images/hero.webp"
           alt="Landing"
           fill
           className="object-cover"
