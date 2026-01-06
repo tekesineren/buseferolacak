@@ -1,17 +1,9 @@
-import Image from "next/image";
+import { Header } from "@/components/Header";
 
 export default function Home() {
   return (
     <main className="min-h-screen">
-      <div className="relative w-full h-screen">
-        <Image
-          src="/images/hero.webp"
-          alt="Landing"
-          fill
-          className="object-cover"
-          priority
-        />
-      </div>
+      <Header />
     </main>
   );
 }
