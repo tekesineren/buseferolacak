@@ -1,6 +1,7 @@
+"use client";
+
 import { useState, useEffect, useRef } from 'react';
 import { ChevronDown, Menu, X } from 'lucide-react';
-import headerImage from '@/assets/61b7c4bf16746e98ae9b69c193ba0391fb32af47.png';
 
 export function Header() {
   const [isServicesOpen, setIsServicesOpen] = useState(false);
@@ -323,7 +324,7 @@ export function Header() {
         {/* Background Image */}
         <div className="absolute inset-0 z-0">
           <img 
-            src={headerImage} 
+            src="/images/hero.webp" 
             alt="Header background" 
             className="w-full h-full object-cover"
           />
