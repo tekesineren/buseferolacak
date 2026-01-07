@@ -1,0 +1,243 @@
+import express from 'express'
+import cors from 'cors'
+import { Mistral } from '@mistralai/mistralai'
+
+const app = express()
+const PORT = 3001
+const MAX_FILE_SIZE = 5 * 1024 * 1024
+
+app.use(cors())
+app.use(express.json({ limit: '10mb' }))
+
+const mistral = new Mistral({ apiKey: process.env.MISTRAL_API_KEY })
+
+// ============ OCR PARSING ENDPOINT ============
+app.post('/api/parse-cv', async (req, res) => {
+  try {
+    const { documentBase64, documentType } = req.body
+
+    if (!documentBase64) {
+      return res.status(400).json({
+        success: false,
+        error: 'No document provided'
+      })
+    }
+
+    const buffer = Buffer.from(documentBase64, 'base64')
+    if (buffer.length > MAX_FILE_SIZE) {
+      return res.status(400).json({
+        success: false,
+        error: 'File size exceeds 5MB limit'
+      })
+    }
+
+    // Call Mistral OCR
+    console.log('📤 Sending to Mistral OCR...')
+    const ocrResponse = await mistral.vision.complete({
+      model: 'pixtral-12b-2409',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'image',
+              imageUrl: `data:${documentType || 'application/pdf'};base64,${documentBase64}`
+            },
+            {
+              type: 'text',
+              text: `Extract and return ONLY valid JSON with this exact structure (no markdown, no code blocks):
+{
+  "skills": ["skill1", "skill2"],
+  "education": {
+    "degree": "degree name",
+    "field": "field of study",
+    "institution": "university name",
+    "graduationYear": 2023
+  },
+  "experience": {
+    "yearsOfExperience": 2,
+    "positions": ["position1", "position2"]
+  },
+  "languages": [
+    {"language": "English", "proficiency": "Fluent"},
+    {"language": "Turkish", "proficiency": "Native"}
+  ]
+}`
+            }
+          ]
+        }
+      ]
+    })
+
+    // ✅ SAFE JSON PARSING WITH ERROR HANDLING
+    let parsedData = null
+    let jsonString = ocrResponse.content[0].text.trim()
+
+    // Remove markdown code blocks if present
+    jsonString = jsonString
+      .replace(/```json\n?/g, '')
+      .replace(/```\n?/g, '')
+      .trim()
+
+    // Try to parse JSON
+    try {
+      parsedData = JSON.parse(jsonString)
+    } catch (parseError) {
+      console.error('❌ JSON Parse Error:', parseError.message)
+      console.error('📄 Raw response:', jsonString.substring(0, 200))
+
+      // Return error with fallback flag
+      return res.status(200).json({
+        success: false,
+        error: 'Failed to parse CV - please fill form manually',
+        fallbackRequired: true,
+        debugInfo: {
+          responseLength: jsonString.length,
+          responsePreview: jsonString.substring(0, 100)
+        }
+      })
+    }
+
+    // ✅ VALIDATE EXTRACTED DATA
+    if (!parsedData.skills || !Array.isArray(parsedData.skills)) {
+      parsedData.skills = []
+    }
+    if (!parsedData.experience) {
+      parsedData.experience = { yearsOfExperience: 0, positions: [] }
+    }
+    if (!parsedData.education) {
+      parsedData.education = {}
+    }
+    if (!parsedData.languages || !Array.isArray(parsedData.languages)) {
+      parsedData.languages = []
+    }
+
+    console.log('✅ OCR Success:', {
+      skillsFound: parsedData.skills.length,
+      educationFound: !!parsedData.education.degree,
+      experienceYears: parsedData.experience.yearsOfExperience
+    })
+
+    return res.json({
+      success: true,
+      data: {
+        skills: parsedData.skills,
+        education: {
+          degree: parsedData.education.degree || '',
+          field: parsedData.education.field || '',
+          institution: parsedData.education.institution || '',
+          graduationYear: parsedData.education.graduationYear || null
+        },
+        experience: {
+          yearsOfExperience: parsedData.experience.yearsOfExperience || 0,
+          positions: parsedData.experience.positions || []
+        },
+        languages: parsedData.languages || [],
+        matchScore: calculateMatchScore(parsedData)
+      }
+    })
+  } catch (error) {
+    console.error('❌ OCR Processing Error:', error.message)
+
+    // Return user-friendly error
+    return res.status(200).json({
+      success: false,
+      error: 'CV parsing failed - please fill the form manually',
+      fallbackRequired: true,
+      technicalError: error.message
+    })
+  }
+})
+
+// ============ PROFILE CREATION ENDPOINT ============
+app.post('/api/profile/create', async (req, res) => {
+  try {
+    const { firstName, lastName, email, skills, experience, education, languages } = req.body
+
+    if (!firstName || !lastName || !email || !skills) {
+      return res.status(400).json({
+        error: 'Missing required fields'
+      })
+    }
+
+    // TODO: Save to database
+    const profileId = `profile_${Date.now()}`
+
+    console.log('✅ Profile created:', profileId)
+
+    return res.json({
+      success: true,
+      profileId,
+      message: 'Profile created successfully'
+    })
+  } catch (error) {
+    console.error('❌ Profile creation error:', error)
+    return res.status(500).json({
+      error: 'Failed to create profile'
+    })
+  }
+})
+
+// ============ HEALTH CHECK ============
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'OK', message: 'Ventora API is running' })
+})
+
+// ============ HELPER FUNCTIONS ============
+
+/**
+ * Calculate match score based on CV data
+ */
+function calculateMatchScore(data) {
+  let score = 0
+  const factors = []
+
+  // Skills (max 30%)
+  if (data.skills && data.skills.length > 0) {
+    const skillScore = Math.min(data.skills.length * 5, 30)
+    score += skillScore
+    factors.push(`Skills: +${skillScore}`)
+  }
+
+  // Education (max 25%)
+  if (data.education?.degree) {
+    score += 25
+    factors.push('Education: +25')
+  }
+
+  // Experience (max 25%)
+  if (data.experience?.yearsOfExperience > 0) {
+    const expScore = Math.min(data.experience.yearsOfExperience * 5, 25)
+    score += expScore
+    factors.push(`Experience: +${expScore}`)
+  }
+
+  // Languages (max 20%)
+  if (data.languages && data.languages.length > 0) {
+    const langScore = Math.min(data.languages.length * 5, 20)
+    score += langScore
+    factors.push(`Languages: +${langScore}`)
+  }
+
+  console.log('📊 Match Score Calculation:', factors.join(' | '), `= ${score}%`)
+
+  return Math.min(score, 100)
+}
+
+// ============ ERROR HANDLING ============
+app.use((err, req, res, next) => {
+  console.error('🚨 Unhandled Error:', err)
+  res.status(500).json({
+    error: 'Internal server error',
+    message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong'
+  })
+})
+
+// ============ START SERVER ============
+app.listen(PORT, () => {
+  console.log(`🚀 Ventora API running on port ${PORT}`)
+  console.log(`📍 OCR Endpoint: POST /api/parse-cv`)
+  console.log(`📍 Health Check: GET /api/health`)
+})
+
+export default app
