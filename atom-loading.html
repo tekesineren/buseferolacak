@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atom Visualization</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+            color: #ffffff;
+            overflow: hidden;
+            height: 100vh;
+            position: relative;
+        }
+
+        /* Animated gradient background */
+        .gradient-bg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: 
+                radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 50% 50%, rgba(14, 165, 233, 0.05) 0%, transparent 50%);
+            animation: gradientShift 15s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        /* Floating particles */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+            border-radius: 50%;
+            opacity: 0;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0% { 
+                opacity: 0;
+                transform: translate(0, 0) scale(0);
+            }
+            10% {
+                opacity: 0.6;
+            }
+            50% { 
+                opacity: 0.8;
+                transform: translate(var(--tx), var(--ty)) scale(1.5);
+            }
+            90% {
+                opacity: 0.6;
+            }
+            100% { 
+                opacity: 0;
+                transform: translate(calc(var(--tx) * 2), calc(var(--ty) * 2)) scale(0);
+            }
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Loading text */
+        .loading-container {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 10;
+            animation: fadeIn 1s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-50%) translateY(20px); }
+            to { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+
+        .loading-text {
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            background: linear-gradient(90deg, #8B5CF6, #3B82F6, #0EA5E9);
+            background-size: 200% auto;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s linear infinite;
+        }
+
+        @keyframes shimmer {
+            to { background-position: 200% center; }
+        }
+
+        .loading-dots {
+            display: inline-flex;
+            gap: 6px;
+            margin-left: 8px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8B5CF6, #3B82F6);
+            animation: bounce 1.4s infinite ease-in-out;
+        }
+
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+        .dot:nth-child(3) { animation-delay: 0s; }
+
+        @keyframes bounce {
+            0%, 80%, 100% { 
+                transform: scale(0);
+                opacity: 0.5;
+            }
+            40% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Progress bar */
+        .progress-bar {
+            width: 200px;
+            height: 2px;
+            background: rgba(139, 92, 246, 0.2);
+            border-radius: 2px;
+            margin-top: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #8B5CF6, #3B82F6, #0EA5E9);
+            border-radius: 2px;
+            width: 0%;
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.5);
+            transition: width 0.3s ease-out;
+        }
+
+        /* Glow effect behind atom */
+        .atom-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 600px;
+            height: 600px;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(139, 92, 246, 0.15) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+            z-index: 0;
+            filter: blur(40px);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+        }
+    </style>
+</head>
+<body>
+    <div class="gradient-bg"></div>
+    <div class="particles" id="particles"></div>
+    <div class="atom-glow"></div>
+    
+    <div id="canvas-container"></div>
+    
+    <div class="loading-container">
+        <div class="loading-text">
+            LOADING
+            <div class="loading-dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+        <div class="progress-bar">
+            <div class="progress-fill"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Create floating particles
+        const particlesContainer = document.getElementById('particles');
+        for (let i = 0; i < 40; i++) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.top = Math.random() * 100 + '%';
+            particle.style.setProperty('--tx', (Math.random() - 0.5) * 200 + 'px');
+            particle.style.setProperty('--ty', (Math.random() - 0.5) * 200 + 'px');
+            particle.style.animationDelay = Math.random() * 10 + 's';
+            particle.style.animationDuration = (15 + Math.random() * 10) + 's';
+            particlesContainer.appendChild(particle);
+        }
+
+        // Three.js scene setup
+        let scene, camera, renderer;
+        const orbitals = [];
+
+        // Color scheme inspired by Ventora.ai
+        const colors = {
+            primary: 0x8B5CF6,    // Purple
+            secondary: 0x3B82F6,  // Blue
+            accent: 0x0EA5E9,     // Sky blue
+            highlight: 0x06B6D4,  // Cyan
+            nucleus: 0xA78BFA     // Light purple
+        };
+
+        // Electron configuration for Gold (Au-79)
+        // 1s² 2s² 2p⁶ 3s² 3p⁶ 3d¹⁰ 4s² 4p⁶ 4d¹⁰ 4f¹⁴ 5s² 5p⁶ 5d¹⁰ 6s¹
+        const electronShells = [
+            { electrons: 2, radius: 2, color: colors.highlight, speed: 1 },      // K shell: 2
+            { electrons: 8, radius: 3.2, color: colors.accent, speed: 0.9 },     // L shell: 8
+            { electrons: 18, radius: 4.4, color: colors.secondary, speed: 0.75 }, // M shell: 18
+            { electrons: 32, radius: 5.8, color: colors.primary, speed: 0.6 },   // N shell: 32
+            { electrons: 18, radius: 7.2, color: colors.nucleus, speed: 0.45 },  // O shell: 18
+            { electrons: 1, radius: 8.5, color: colors.highlight, speed: 0.35 }  // P shell: 1
+        ];
+
+        function init() {
+            // Scene
+            scene = new THREE.Scene();
+            scene.fog = new THREE.Fog(0x0F172A, 10, 50);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 20;
+            camera.position.y = 3;
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+            scene.add(ambientLight);
+
+            const pointLight1 = new THREE.PointLight(colors.primary, 2, 100);
+            pointLight1.position.set(10, 10, 10);
+            scene.add(pointLight1);
+
+            const pointLight2 = new THREE.PointLight(colors.secondary, 1.5, 100);
+            pointLight2.position.set(-10, -10, 10);
+            scene.add(pointLight2);
+
+            const pointLight3 = new THREE.PointLight(colors.accent, 1, 100);
+            pointLight3.position.set(0, 10, -10);
+            scene.add(pointLight3);
+
+            // Create nucleus
+            createNucleus();
+
+            // Create electron shells
+            electronShells.forEach((shell, index) => {
+                createElectronShell(shell, index);
+            });
+
+            // Start animation
+            animate();
+        }
+
+        function createNucleus() {
+            // Main nucleus
+            const nucleusGeometry = new THREE.SphereGeometry(0.6, 32, 32);
+            const nucleusMaterial = new THREE.MeshPhongMaterial({
+                color: 0xffffff,
+                emissive: colors.nucleus,
+                emissiveIntensity: 0.6,
+                shininess: 100
+            });
+            const nucleus = new THREE.Mesh(nucleusGeometry, nucleusMaterial);
+            scene.add(nucleus);
+
+            // Glow layers
+            for (let i = 1; i <= 4; i++) {
+                const glowGeometry = new THREE.SphereGeometry(0.6 + i * 0.25, 32, 32);
+                const glowMaterial = new THREE.MeshBasicMaterial({
+                    color: colors.primary,
+                    transparent: true,
+                    opacity: 0.1 / i
+                });
+                const glow = new THREE.Mesh(glowGeometry, glowMaterial);
+                scene.add(glow);
+                
+                glow.userData.rotationSpeed = 0.001 * i;
+                orbitals.push({ mesh: glow, speed: 0 });
+            }
+
+            // Nucleus pulse animation
+            nucleus.userData.animate = () => {
+                const scale = 1 + Math.sin(Date.now() * 0.002) * 0.15;
+                nucleus.scale.set(scale, scale, scale);
+            };
+            orbitals.push({ mesh: nucleus, speed: 0 });
+        }
+
+        function createElectronShell(shell, shellIndex) {
+            // Create orbital ring
+            const ringGeometry = new THREE.TorusGeometry(shell.radius, 0.015, 16, 100);
+            const ringMaterial = new THREE.MeshBasicMaterial({
+                color: shell.color,
+                transparent: true,
+                opacity: 0.2
+            });
+            const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+            
+            // Varied rotation angles
+            ring.rotation.x = (Math.PI / 6) * shellIndex;
+            ring.rotation.y = (Math.PI / 8) * shellIndex;
+            ring.rotation.z = (Math.PI / 10) * shellIndex;
+            
+            scene.add(ring);
+            orbitals.push({ mesh: ring, speed: shell.speed });
+
+            // Create electrons
+            for (let i = 0; i < shell.electrons; i++) {
+                const angle = (Math.PI * 2 * i) / shell.electrons;
+                
+                // Electron sphere
+                const electronGeometry = new THREE.SphereGeometry(0.12, 16, 16);
+                const electronMaterial = new THREE.MeshPhongMaterial({
+                    color: shell.color,
+                    emissive: shell.color,
+                    emissiveIntensity: 0.7,
+                    shininess: 100
+                });
+                const electron = new THREE.Mesh(electronGeometry, electronMaterial);
+                
+                // Position
+                electron.position.x = Math.cos(angle) * shell.radius;
+                electron.position.z = Math.sin(angle) * shell.radius;
+                electron.position.y = (Math.random() - 0.5) * 0.3;
+                
+                ring.add(electron);
+
+                // Electron glow
+                const glowGeometry = new THREE.SphereGeometry(0.2, 16, 16);
+                const glowMaterial = new THREE.MeshBasicMaterial({
+                    color: shell.color,
+                    transparent: true,
+                    opacity: 0.4
+                });
+                const electronGlow = new THREE.Mesh(glowGeometry, glowMaterial);
+                electron.add(electronGlow);
+
+                // Animation data
+                electron.userData.baseY = electron.position.y;
+                electron.userData.offset = i * 0.3;
+                electron.userData.baseScale = 1;
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            const time = Date.now() * 0.001;
+
+            // Rotate orbitals
+            orbitals.forEach((orbital, index) => {
+                if (orbital.speed > 0) {
+                    orbital.mesh.rotation.y += orbital.speed * 0.01;
+                    orbital.mesh.rotation.x += orbital.speed * 0.005;
+                    
+                    // Subtle wobble
+                    orbital.mesh.rotation.z = Math.sin(time * 0.5 + index) * 0.03;
+
+                    // Animate electrons
+                    orbital.mesh.children.forEach((electron) => {
+                        if (electron.userData.baseY !== undefined) {
+                            // Floating motion
+                            electron.position.y = electron.userData.baseY + 
+                                Math.sin(time + electron.userData.offset) * 0.2;
+                            
+                            // Rotation
+                            electron.rotation.y = time * 2 + electron.userData.offset;
+                            
+                            // Pulse glow
+                            if (electron.children[0]) {
+                                const glowScale = 1 + Math.sin(time * 2 + electron.userData.offset) * 0.3;
+                                electron.children[0].scale.set(glowScale, glowScale, glowScale);
+                                electron.children[0].material.opacity = 0.3 + Math.sin(time * 2 + electron.userData.offset) * 0.2;
+                            }
+                        }
+                    });
+                } else if (orbital.mesh.userData.rotationSpeed) {
+                    // Glow rotation
+                    orbital.mesh.rotation.y += orbital.mesh.userData.rotationSpeed;
+                    orbital.mesh.rotation.x += orbital.mesh.userData.rotationSpeed * 0.5;
+                }
+                
+                // Nucleus animation
+                if (orbital.mesh.userData.animate) {
+                    orbital.mesh.userData.animate();
+                }
+            });
+
+            // Smooth camera orbit
+            const radius = 20;
+            camera.position.x = Math.sin(time * 0.1) * radius * 0.3;
+            camera.position.z = radius + Math.cos(time * 0.1) * radius * 0.2;
+            camera.position.y = 3 + Math.sin(time * 0.15) * 2;
+            camera.lookAt(0, 0, 0);
+
+            renderer.render(scene, camera);
+        }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // Initialize
+        init();
+
+        // Realistic random progress bar
+        function animateProgress() {
+            const progressFill = document.querySelector('.progress-fill');
+            let currentProgress = 0;
+            
+            // Random duration between 3-5 seconds
+            const totalDuration = 3000 + Math.random() * 2000;
+            const startTime = Date.now();
+            
+            // Define realistic progress stages (simulates actual processing steps)
+            const stages = [
+                { until: 15, speed: 'fast' },      // Initial load: fast
+                { until: 35, speed: 'medium' },    // Processing: medium
+                { until: 50, speed: 'slow' },      // Heavy computation: slow
+                { until: 75, speed: 'fast' },      // Finalizing: fast again
+                { until: 92, speed: 'slow' },      // Almost done: slow
+                { until: 100, speed: 'instant' }   // Complete: instant
+            ];
+            
+            let currentStageIndex = 0;
+            
+            function updateProgress() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min((elapsed / totalDuration) * 100, 100);
+                
+                // Add some randomness to make it feel more organic
+                const randomness = Math.random() * 2 - 1; // -1 to 1
+                let targetProgress = progress + randomness;
+                
+                // Ensure we hit the stage milestones
+                const currentStage = stages[currentStageIndex];
+                if (currentProgress < currentStage.until) {
+                    // Apply speed multiplier based on stage
+                    let increment;
+                    switch(currentStage.speed) {
+                        case 'fast':
+                            increment = 0.5 + Math.random() * 1;
+                            break;
+                        case 'medium':
+                            increment = 0.2 + Math.random() * 0.4;
+                            break;
+                        case 'slow':
+                            increment = 0.1 + Math.random() * 0.2;
+                            break;
+                        case 'instant':
+                            increment = 100;
+                            break;
+                    }
+                    
+                    currentProgress = Math.min(currentProgress + increment, currentStage.until);
+                    
+                    // Move to next stage if we've reached the milestone
+                    if (currentProgress >= currentStage.until && currentStageIndex < stages.length - 1) {
+                        currentStageIndex++;
+                        // Small pause between stages (feels like switching tasks)
+                        setTimeout(() => requestAnimationFrame(updateProgress), 100 + Math.random() * 200);
+                        return;
+                    }
+                } else {
+                    // Move to next stage
+                    if (currentStageIndex < stages.length - 1) {
+                        currentStageIndex++;
+                    }
+                }
+                
+                progressFill.style.width = currentProgress + '%';
+                
+                if (currentProgress < 100) {
+                    // Random small delays to simulate real processing
+                    const delay = 20 + Math.random() * 30;
+                    setTimeout(() => requestAnimationFrame(updateProgress), delay);
+                } else {
+                    // Hold at 100% for a moment before any completion callback
+                    setTimeout(() => {
+                        // Here you would trigger your actual page load/transition
+                        console.log('Loading complete!');
+                        // Example: window.location.href = '/next-page';
+                    }, 300);
+                }
+            }
+            
+            updateProgress();
+        }
+        
+        // Start progress animation after a brief moment
+        setTimeout(animateProgress, 500);
+    </script>
+</body>
+</html>
